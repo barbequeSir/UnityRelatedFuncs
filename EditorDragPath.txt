@@ -1,0 +1,82 @@
+using UnityEngine;
+using System.Collections;
+using UnityEditor;
+using System.IO;
+using UnityEngine.UI;
+//拖拽路径 批量修改prefab
+public class TestDrag : EditorWindow
+{
+    private string path;
+
+    Rect rect;
+
+    [MenuItem("Window/TestDrag")]
+    private static void Init()
+    {
+        EditorWindow.GetWindow(typeof(TestDrag));
+    }
+
+    void OnGUI()
+    {
+        EditorGUILayout.LabelField("路径");
+        rect = EditorGUILayout.GetControlRect(GUILayout.Width(400));
+
+        path = EditorGUI.TextField(rect, path);
+
+        if ((Event.current.type == EventType.dragUpdated ||
+            Event.current.type == EventType.DragExited) &&
+        rect.Contains(Event.current.mousePosition))
+        {
+            DragAndDrop.visualMode = DragAndDropVisualMode.Generic;
+            if (DragAndDrop.paths != null && DragAndDrop.paths.Length > 0)
+            {
+                path = DragAndDrop.paths[0];
+            }
+        }
+
+        if (GUILayout.Button("Run"))  //在窗口上创建一个按钮  
+        {
+            Run();
+        }
+    }
+
+    void Run()
+    {
+        if (string.IsNullOrEmpty(path))
+            return;
+
+        string[] ids = AssetDatabase.FindAssets("t:Prefab", new string[] { path });
+        for (int i = 0; i < ids.Length; i++)
+        {
+            string path = AssetDatabase.GUIDToAssetPath(ids[i]);
+
+            GameObject prefab = AssetDatabase.LoadAssetAtPath(path, typeof(GameObject)) as GameObject;
+            GameObject instance = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
+
+            ProcessTransform(instance.transform);
+
+            var newprefab = PrefabUtility.CreateEmptyPrefab(path);
+            PrefabUtility.ReplacePrefab(instance, newprefab, ReplacePrefabOptions.Default);
+            DestroyImmediate(instance);
+        }
+
+        AssetDatabase.SaveAssets();
+        Debug.Log("Done");
+    }
+   
+    void ProcessTransform(Transform trans)
+    {
+        Button btn = trans.GetComponent<Button>();
+        Game game = trans.GetComponent<Game>();
+        if (btn != null && game==null)
+        {            
+            trans.gameObject.AddComponent<Game>();
+        }
+            
+
+        for(int i = 0;i< trans.childCount;i++)
+        {
+            ProcessTransform(trans.GetChild(i));
+        }
+    }
+}
