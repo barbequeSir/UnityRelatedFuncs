@@ -26,6 +26,8 @@
             float4 _NormalTex_ST;
             float _Gloss;
             float4 _Specular;
+
+            /*transform tangentspace Normal to worldspace Normal
             struct a2v 
             {
                 float4 pos:POSITION;
@@ -51,27 +53,27 @@
                 float3 worldNormal = UnityObjectToWorldNormal(v.normal);
                 float3 worldTangent = UnityObjectToWorldDir(v.tangent.xyz);
                 float3 worldBiTangent = cross(worldNormal,worldTangent)*v.tangent.w;
-                o.tangent = worldTangent;
-                o.normal = worldNormal;
-                o.bitangent = worldBiTangent;
-                o.uv.xy = TRANSFORM_TEX(v.uv,_MainTex);
-                o.uv.zw = TRANSFORM_TEX(v.uv,_NormalTex);
+                o.tangent = float3(worldTangent.x,worldBiTangent.x,worldNormal.x);
+                o.normal = float3(worldTangent.z,worldBiTangent.z,worldNormal.z);
+                o.bitangent = float3(worldTangent.y,worldBiTangent.y,worldNormal.y);
+                //o.uv.xy = TRANSFORM_TEX(v.uv,_MainTex);
+                //o.uv.zw = TRANSFORM_TEX(v.uv,_NormalTex);
+                o.uv.xy = v.uv.xy * _MainTex_ST.xy + _MainTex_ST.zw;
+                o.uv.zw = v.uv.xy * _NormalTex_ST.xy + _NormalTex_ST.zw;
                 o.worldPos = mul(unity_ObjectToWorld,v.pos).xyz;
                 return o;
             }
 
             float4 frag(v2f i):SV_TARGET
             {
-                float3 normal = normalize(i.normal);
-                float3 worldTangent = normalize(i.tangent);
-                float3 worldBiTangent = normalize(i.bitangent);
-                float3x3 rotation = transpose(float3x3(worldTangent,worldBiTangent,normal));
-                float3 tangentNormal = UnpackNormal(tex2D(_NormalTex,i.uv.zw)).xyz;
-                float3 worldNormal = normalize(mul(rotation,tangentNormal));
+               
+                float3x3 rotation = float3x3(i.tangent,i.bitangent,i.normal);
+                float3 tangentNormal = UnpackNormal(tex2D(_NormalTex,i.uv.zw));
+                float3 worldNormal = normalize(float3(dot(i.tangent,tangentNormal),dot(i.bitangent,tangentNormal),dot(i.normal,tangentNormal)));
                 float3 worldLight = normalize(UnityWorldSpaceLightDir(i.worldPos));
                 float3 worldView = normalize(UnityWorldSpaceViewDir(i.worldPos));
                 float3 worldLightReflect = reflect(-worldLight,worldNormal);
-                float3 halfDir = normalize(worldLightReflect + worldView);
+                float3 halfDir = normalize(worldLight + worldView);
                 
                 float4 mainCol = tex2D(_MainTex,i.uv.xy);
                 float3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz * mainCol;
@@ -80,8 +82,8 @@
                 float3 col = ambient + diffuse + specular;
                 return float4(col,1);
             }
-
-            /*  transform view light form model to tangent space
+            */
+            /*  transform view light form model to tangent space*/
             struct a2v
             {
                 float4 pos:POSITION;
@@ -118,7 +120,7 @@
                 float3 lightDir = normalize(i.lightDir);
                 float3 normal = UnpackNormal( tex2D(_NormalTex,i.uv.zw));
                 float4 mainCol = tex2D(_MainTex,i.uv.xy);
-                float3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz *0.1 * mainCol.xyz;
+                float3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz  * mainCol.xyz;
                 float3 diffuse = _LightColor0.rgb * max(0,dot(normal,lightDir))*mainCol.xyz;
                 float3 reflectDir = reflect(-lightDir,normal);
                 float3 specular = pow(max(0,dot(reflectDir,viewDir)),_Gloss);
@@ -126,7 +128,7 @@
                 
                 return float4(col,1.0);
             }
-            */
+            /**/
 
             ENDCG
         }
