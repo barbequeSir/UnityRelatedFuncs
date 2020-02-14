@@ -27,7 +27,7 @@
             float _Gloss;
             float4 _Specular;
 
-            /*transform tangentspace Normal to worldspace Normal
+            /*transform tangentspace Normal to worldspace Normal*/
             struct a2v 
             {
                 float4 pos:POSITION;
@@ -82,8 +82,8 @@
                 float3 col = ambient + diffuse + specular;
                 return float4(col,1);
             }
-            */
-            /*  transform view light form model to tangent space*/
+            /**/
+            /*  transform view light form model to tangent space
             struct a2v
             {
                 float4 pos:POSITION;
@@ -128,7 +128,7 @@
                 
                 return float4(col,1.0);
             }
-            /**/
+            */
 
             ENDCG
         }
