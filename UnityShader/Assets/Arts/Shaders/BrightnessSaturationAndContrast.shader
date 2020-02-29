@@ -1,4 +1,4 @@
-﻿Shader "Unlit/BrightnessSaturationAndContrast"
+﻿Shader "BarbequeSir/BrightnessSaturationAndContrast"
 {
     Properties
     {

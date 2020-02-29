@@ -13,9 +13,11 @@ Shader "BarbequeSir/DiffuseTexture"
 
     SubShader
     {
+        Tags{"Queue"="Geometry"  "RenderType"="Opaque" }
+        
         Pass
         {
-            Tags{"LightMode"="ForwardBase"}
+            Tags{"LightMode"="ForwardBase"  }
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
@@ -75,5 +77,5 @@ Shader "BarbequeSir/DiffuseTexture"
         }
     }
 
-    //Fallback "Specular"
+    Fallback "VertexLit"
 }

@@ -13,6 +13,8 @@
         Cull Off
         
         CGINCLUDE
+// Upgrade NOTE: excluded shader from DX11; has structs without semantics (struct v2f members uv)
+#pragma exclude_renderers d3d11
         #include "UnityCG.cginc"
         
         float _BlurSize;

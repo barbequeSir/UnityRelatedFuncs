@@ -133,5 +133,5 @@
             ENDCG
         }
     }
-    
+    Fallback "Specular"
 }
